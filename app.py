@@ -34,7 +34,18 @@ DATABASE_PATH = os.getenv("DATABASE_PATH", "mailroom.sqlite3")
 MAX_BODY = 2 * 1024 * 1024
 app = FastAPI(title="Safe AI Mailroom")
 
+import tempfile
 
+def _usable(path):
+    try:
+        d = os.path.dirname(os.path.abspath(path))
+        os.makedirs(d, exist_ok=True)
+        return os.access(d, os.W_OK)
+    except OSError:
+        return False
+
+if not _usable(DATABASE_PATH):
+    DATABASE_PATH = os.path.join(tempfile.gettempdir(), "mailroom.sqlite3")
 # ---------- Canonical JSON and hashing ----------
 
 def canonical(obj: Any) -> bytes:
